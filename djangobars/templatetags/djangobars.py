@@ -1,3 +1,4 @@
+from django import VERSION as DJANGO_VERSION
 from django.template.base import TextNode, Node, Variable, TemplateSyntaxError, Library
 from django.template.loaders.app_directories import Loader
 from ..template.loader import get_template
@@ -42,6 +43,10 @@ def include_raw_handlebars(parser, token):
     if template_name[0] in ('"', "'") and template_name[-1] == template_name[0]:
         template_name = template_name[1:-1]
 
-    source, path = Loader().load_template_source(template_name)
+    if DJANGO_VERSION >= (1, 8):
+        from django.template.engine import Engine
+        source, path = Loader(Engine.get_default()).load_template_source(template_name)
+    else:
+        source, path = Loader().load_template_source(template_name)
 
     return TextNode(source)
