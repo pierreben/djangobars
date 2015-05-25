@@ -1,11 +1,18 @@
+from django import VERSION as DJANGO_VERSION
 from django.template import Context, RequestContext
 from django.template.base import TemplateDoesNotExist
-from django.template.loader import (find_template_loader, BaseLoader,
-                                    make_origin)
+from django.template.loader import BaseLoader
+
+try:
+    from django.template.engine import Engine
+    from django.conf import settings
+    make_origin = Engine.get_default().make_origin
+    find_template_loader = Engine.get_default().find_template_loader
+except ImportError:  # Django < 1.8
+    from django.template.loader import make_origin, find_template_loader
 
 from .. import settings
 from .base import HandlebarsTemplate
-
 
 template_source_loaders = None
 
@@ -41,7 +48,8 @@ def find_template(name, dirs=None):
     if template_source_loaders is None:
         loaders = []
         for loader_name in settings.HANDLEBARS_LOADERS:
-            loader = find_template_loader(loader_name)
+            loader_arg = (loader_name, Engine.get_default()) if DJANGO_VERSION >= (1, 8) else loader_name
+            loader = find_template_loader(loader_arg)
             if loader is not None:
                 loaders.append(loader)
         template_source_loaders = tuple(loaders)
