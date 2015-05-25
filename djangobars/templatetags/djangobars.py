@@ -1,4 +1,4 @@
-from django.template import TextNode, Node, Variable, TemplateSyntaxError, Library
+from django.template.base import TextNode, Node, Variable, TemplateSyntaxError, Library
 from django.template.loaders.app_directories import Loader
 from ..template.loader import get_template
 
