@@ -1,5 +1,6 @@
 from django import VERSION as DJANGO_VERSION
-from django.template.base import TextNode, Node, Variable, TemplateSyntaxError, Library
+from django.template.base import TextNode, Node, Variable, TemplateSyntaxError
+from django.template.library import Library
 from django.template.loaders.app_directories import Loader
 from ..template.loader import get_template
 
@@ -32,7 +33,7 @@ def include_handlebars(parser, token):
 
 @register.tag
 def include_raw_handlebars(parser, token):
-    """ 
+    """
     Performs a template include without parsing the context, just dumps the template in.
     """
     bits = token.split_contents()

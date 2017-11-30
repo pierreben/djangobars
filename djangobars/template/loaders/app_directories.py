@@ -1,12 +1,11 @@
 import os
 import sys
+from importlib import import_module
 
 from django.core.exceptions import ImproperlyConfigured
 from django.template.loaders.app_directories import Loader as CoreLoader
-from django.utils.importlib import import_module
 from djangobars.template.loader import BaseHandlebarsLoader
 from ... import settings
-
 
 # At compile time, cache the directories to search.
 fs_encoding = sys.getfilesystemencoding() or sys.getdefaultencoding()

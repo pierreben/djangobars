@@ -8,6 +8,7 @@ class HandlebarsTemplate (object):
         c = pybars.Compiler()
         self.handlebars = c.compile(template_string)
         self.name = name
+        self.origin = origin
         self.helpers = _djangobars_['helpers'].copy()
 
     def render(self, context):

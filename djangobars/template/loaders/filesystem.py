@@ -2,7 +2,10 @@ from django.template.loaders.filesystem import Loader as CoreLoader
 from djangobars import settings
 from djangobars.template.loader import BaseHandlebarsLoader
 
+
 class Loader(BaseHandlebarsLoader, CoreLoader):
+    def __init__(self, engine, dirs=None):
+        super(Loader, self).__init__(engine, dirs)
 
     def get_template_sources(self, template_name, template_dirs=None):
         """

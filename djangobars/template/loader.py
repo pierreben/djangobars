@@ -1,15 +1,16 @@
+import warnings
+
 from django import VERSION as DJANGO_VERSION
-from django.template import Context, RequestContext
-from django.template.base import TemplateDoesNotExist
-from django.template.loader import BaseLoader
+from django.template import Origin, Context
+from django.template.exceptions import TemplateDoesNotExist
+from django.template.loaders.base import Loader
+from django.utils.deprecation import RemovedInDjango20Warning
 
 try:
     from django.template.engine import Engine
-    from django.conf import settings
-    make_origin = Engine.get_default().make_origin
     find_template_loader = Engine.get_default().find_template_loader
 except ImportError:  # Django < 1.8
-    from django.template.loader import make_origin, find_template_loader
+    from django.template.loader import find_template_loader
 
 from .. import settings
 from .base import HandlebarsTemplate
@@ -17,7 +18,7 @@ from .base import HandlebarsTemplate
 template_source_loaders = None
 
 
-class BaseHandlebarsLoader(BaseLoader):
+class BaseHandlebarsLoader(Loader):
     """
     Base loader for Handlebars templates. Just override the load_template method
     to use the get_template_from_string method in the djangobars.template.loader
@@ -25,19 +26,28 @@ class BaseHandlebarsLoader(BaseLoader):
     """
 
     def load_template(self, template_name, template_dirs=None):
-        source, display_name = self.load_template_source(template_name,
-                                                         template_dirs)
-        origin = make_origin(display_name, self.load_template_source,
-                             template_name, template_dirs)
+        warnings.warn(
+            'The load_template() method is deprecated. Use get_template() '
+            'instead.', RemovedInDjango20Warning,
+        )
+        source, display_name = self.load_template_source(
+            template_name, template_dirs,
+        )
+        origin = Origin(
+            name=display_name,
+            template_name=template_name,
+            loader=self,
+        )
         try:
             template = get_template_from_string(source, origin, template_name)
-            return template, None
         except TemplateDoesNotExist:
             # If compiling the template we found raises TemplateDoesNotExist,
-            # back off to returning the source and display name for the template
-            # we were asked to load. This allows for correct identification
-            # (later) of the actual template that does not exist.
+            # back off to returning the source and display name for the
+            # template we were asked to load. This allows for correct
+            # identification of the actual template that does not exist.
             return source, display_name
+        else:
+            return template, None
 
 
 def find_template(name, dirs=None):
@@ -48,7 +58,8 @@ def find_template(name, dirs=None):
     if template_source_loaders is None:
         loaders = []
         for loader_name in settings.HANDLEBARS_LOADERS:
-            loader_arg = (loader_name, Engine.get_default()) if DJANGO_VERSION >= (1, 8) else loader_name
+            # loader_arg = (loader_name, Engine.get_default()) if DJANGO_VERSION >= (1, 8) else loader_name
+            loader_arg = (loader_name, dirs)
             loader = find_template_loader(loader_arg)
             if loader is not None:
                 loaders.append(loader)
@@ -56,7 +67,8 @@ def find_template(name, dirs=None):
     for loader in template_source_loaders:
         try:
             source, display_name = loader(name, dirs)
-            return (source, make_origin(display_name, loader, name, dirs))
+            # return (source, make_origin(display_name, loader, name, dirs))
+            return (source, source.origin)
         except TemplateDoesNotExist:
             pass
     raise TemplateDoesNotExist(name)
