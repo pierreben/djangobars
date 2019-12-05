@@ -1,5 +1,4 @@
 from django.template.response import TemplateResponse
-from .template import HandlebarsTemplate
 from .loader import select_template, get_template
 
 
