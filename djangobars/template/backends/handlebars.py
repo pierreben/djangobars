@@ -17,7 +17,7 @@ class HandleBars(BaseEngine):
 
         self.engine = Engine(self.dirs, self.app_dirs)
         self.compiler = pybars.Compiler()
-        self.file_charset = settings.FILE_CHARSET
+        self.file_charset = 'utf-8'
 
     def get_template(self, template_name):
         return self.engine.get_template(template_name)
